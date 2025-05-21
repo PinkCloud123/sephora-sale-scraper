@@ -1,0 +1,11 @@
+{
+  "name": "sephora-sale-scraper",
+  "version": "0.1",
+  "buildTag": "latest",
+  "env": null,
+  "defaultRunOptions": {
+    "build": "latest",
+    "timeoutSecs": 3600,
+    "memoryMbytes": 1024
+  }
+}

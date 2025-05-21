@@ -1,0 +1,11 @@
+{
+  "name": "sephora-sale-scraper",
+  "version": "0.1.0",
+  "description": "Scrapes Sephora Canada sale skincare and makeup products",
+  "dependencies": {
+    "apify": "^3.0.0"
+  },
+  "scripts": {
+    "start": "node main.js"
+  }
+}
