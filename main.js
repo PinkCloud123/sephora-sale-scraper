@@ -15,11 +15,13 @@ for (let i = 1; i <= maxPages; i++) {
     }
 }
 
+const proxyConfiguration = await Actor.createProxyConfiguration();
+
 const crawler = new CheerioCrawler({
     requestQueue,
     maxRequestsPerCrawl: 100,
     useSessionPool: true,
-    useApifyProxy: true,
+    proxyConfiguration,
     handlePageFunction: async ({ $, request }) => {
         let category = 'Unknown';
         if (request.url.includes('node=cat150006')) category = 'Skincare';
