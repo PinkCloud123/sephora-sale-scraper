@@ -1,4 +1,5 @@
 import { Actor } from 'apify';
+import { CheerioCrawler } from 'crawlee';
 
 await Actor.init();
 
@@ -14,7 +15,7 @@ for (let i = 1; i <= maxPages; i++) {
     }
 }
 
-const crawler = new Actor.CheerioCrawler({
+const crawler = new CheerioCrawler({
     requestQueue,
     maxRequestsPerCrawl: 100,
     useSessionPool: true,
