@@ -1,5 +1,5 @@
 import { Actor } from 'apify';
-import { CheerioCrawler } from 'crawlee';
+import { PuppeteerCrawler } from 'crawlee';
 
 await Actor.init();
 
@@ -17,42 +17,49 @@ for (let i = 1; i <= maxPages; i++) {
 
 const proxyConfiguration = await Actor.createProxyConfiguration();
 
-const crawler = new CheerioCrawler({
+const crawler = new PuppeteerCrawler({
     requestQueue,
     maxRequestsPerCrawl: 100,
     useSessionPool: true,
     proxyConfiguration,
-    requestHandler: async ({ $, request }) => {
-        let category = 'Unknown';
-        if (request.url.includes('node=cat150006')) category = 'Skincare';
-        else if (request.url.includes('node=cat140006')) category = 'Makeup';
+    headless: true,
+    requestHandler: async ({ page, request }) => {
+        const category = request.url.includes('cat150006') ? 'Skincare' :
+                         request.url.includes('cat140006') ? 'Makeup' : 'Unknown';
 
-        $('.css-12egk0t').each(async (_, el) => {
-            const brand = $(el).find('[data-comp="ProductGridItem  BrandLink"]').text().trim();
-            const name = $(el).find('[data-comp="ProductGridItem  Title"]').text().trim();
-            const priceText = $(el).find('[data-comp="DisplayPrimaryPrice"]').text().replace('$', '').trim();
-            const originalText = $(el).find('[data-comp="DisplaySecondaryPrice"]').text().replace('$', '').trim();
-            const price = parseFloat(priceText) || null;
-            const originalPrice = parseFloat(originalText) || null;
-            const discount = (originalPrice && price) ? Math.round((1 - price / originalPrice) * 100) : 0;
-            const productUrl = 'https://www.sephora.com' + $(el).find('a').attr('href');
-            const image = $(el).find('img').attr('src') || null;
-            const ratingText = $(el).find('[data-comp="Rating  Stars"]').attr('aria-label');
-            const rating = ratingText ? parseFloat(ratingText.split(' ')[0]) : null;
+        await page.waitForSelector('.css-12egk0t', { timeout: 15000 });
 
-            await Actor.pushData({
-                name,
-                brand,
-                price,
-                originalPrice,
-                discount,
-                productUrl,
-                image,
-                rating,
-                category,
-                scrapedFrom: request.url
+        const products = await page.$$eval('.css-12egk0t', (cards, category) => {
+            return cards.map(card => {
+                const brand = card.querySelector('[data-comp="ProductGridItem  BrandLink"]')?.textContent?.trim() || null;
+                const name = card.querySelector('[data-comp="ProductGridItem  Title"]')?.textContent?.trim() || null;
+                const priceText = card.querySelector('[data-comp="DisplayPrimaryPrice"]')?.textContent?.replace('$', '').trim();
+                const originalText = card.querySelector('[data-comp="DisplaySecondaryPrice"]')?.textContent?.replace('$', '').trim();
+                const price = parseFloat(priceText) || null;
+                const originalPrice = parseFloat(originalText) || null;
+                const discount = (originalPrice && price) ? Math.round((1 - price / originalPrice) * 100) : 0;
+                const productUrl = 'https://www.sephora.com' + (card.querySelector('a')?.getAttribute('href') || '');
+                const image = card.querySelector('img')?.getAttribute('src') || null;
+                const ratingText = card.querySelector('[data-comp="Rating  Stars"]')?.getAttribute('aria-label');
+                const rating = ratingText ? parseFloat(ratingText.split(' ')[0]) : null;
+
+                return {
+                    name,
+                    brand,
+                    price,
+                    originalPrice,
+                    discount,
+                    productUrl,
+                    image,
+                    rating,
+                    category
+                };
             });
-        });
+        }, category);
+
+        for (const product of products) {
+            await Actor.pushData(product);
+        }
     },
 });
 
