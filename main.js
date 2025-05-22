@@ -22,12 +22,12 @@ const crawler = new CheerioCrawler({
     maxRequestsPerCrawl: 100,
     useSessionPool: true,
     proxyConfiguration,
-    handlePageFunction: async ({ $, request }) => {
+    requestHandler: async ({ $, request }) => {
         let category = 'Unknown';
         if (request.url.includes('node=cat150006')) category = 'Skincare';
         else if (request.url.includes('node=cat140006')) category = 'Makeup';
 
-        $('.css-1ez7n0j').each(async (_, el) => {
+        $('.css-12egk0t').each(async (_, el) => {
             const brand = $(el).find('[data-comp="ProductGridItem  BrandLink"]').text().trim();
             const name = $(el).find('[data-comp="ProductGridItem  Title"]').text().trim();
             const priceText = $(el).find('[data-comp="DisplayPrimaryPrice"]').text().replace('$', '').trim();
