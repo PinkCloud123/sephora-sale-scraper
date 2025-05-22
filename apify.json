@@ -1,11 +1,9 @@
 {
   "name": "sephora-sale-scraper",
-  "version": "0.1",
+  "version": "0.1.0",
+  "description": "Scrapes Sephora Canada sale skincare and makeup products using Puppeteer",
+  "main": "main.js",
   "buildTag": "latest",
-  "env": null,
-  "defaultRunOptions": {
-    "build": "latest",
-    "timeoutSecs": 3600,
-    "memoryMbytes": 1024
-  }
+  "env": [],
+  "baseDockerImage": "apify/actor-node-puppeteer-chrome"
 }
